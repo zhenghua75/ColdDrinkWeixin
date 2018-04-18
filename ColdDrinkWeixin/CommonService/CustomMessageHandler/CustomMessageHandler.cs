@@ -383,17 +383,7 @@ namespace ColdDrinkWeixin.CommonService.CustomMessageHandler
             return requestHandler.GetResponseMessage() as IResponseMessageBase;
         }
 
-        /// <summary>
-        /// 处理位置请求
-        /// </summary>
-        /// <param name="requestMessage"></param>
-        /// <returns></returns>
-        public override IResponseMessageBase OnLocationRequest(RequestMessageLocation requestMessage)
-        {
-            var locationService = new LocationService();
-            var responseMessage = locationService.GetResponseMessage(requestMessage as RequestMessageLocation);
-            return responseMessage;
-        }
+       
 
         public override IResponseMessageBase OnShortVideoRequest(RequestMessageShortVideo requestMessage)
         {

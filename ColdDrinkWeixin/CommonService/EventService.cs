@@ -97,11 +97,7 @@ namespace ColdDrinkWeixin.CommonService
             {
                 Task.Factory.StartNew(async () =>
                 {
-#if NET45
-                    var appId = ConfigurationManager.AppSettings["WeixinAppId"];
-#else
                     var appId = "AppId";
-#endif
 
                     string openId = "";//收到通知的管理员OpenId
                     var host = "A1 / AccessTokenOrAppId：" + (ex.AccessTokenOrAppId ?? "null");
