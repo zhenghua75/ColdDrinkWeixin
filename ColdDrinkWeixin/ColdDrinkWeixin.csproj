@@ -2,15 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeIdentifiers>centos.7-x64;win7-x64;osx.10.12-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win7-64;centos.7-x64</RuntimeIdentifiers>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Properties\PublishProfiles\centos.7-x64.pubxml" />
-    <None Remove="Properties\PublishProfiles\CustomProfile.pubxml" />
-    <None Remove="Properties\PublishProfiles\FolderProfile.pubxml" />
-    <None Remove="Properties\PublishProfiles\win7-64.pubxml" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.7" />
