@@ -37,17 +37,11 @@ namespace ColdDrinkWeixin.CommonService.CustomMessageHandler
          * 其中所有原OnXX的抽象方法已经都改为虚方法，可以不必每个都重写。若不重写，默认返回DefaultResponseMessage方法中的结果。
          */
 
-
-#if DEBUG || NETSTANDARD1_6  || NETSTANDARD2_0
+            
         string agentUrl = "http://localhost:12222/App/Weixin/4";
         string agentToken = "27C455F496044A87";
         //string wiweihiKey = "CNadjJuWzyX5bz5Gn+/XoyqiqMa5DjXQ";
-#else
-        //下面的Url和Token可以用其他平台的消息，或者到www.weiweihi.com注册微信用户，将自动在“微信营销工具”下得到
-        private string agentUrl = WebConfigurationManager.AppSettings["WeixinAgentUrl"];//这里使用了www.weiweihi.com微信自动托管平台
-        private string agentToken = WebConfigurationManager.AppSettings["WeixinAgentToken"];//Token
-        private string wiweihiKey = WebConfigurationManager.AppSettings["WeixinAgentWeiweihiKey"];//WeiweihiKey专门用于对接www.Weiweihi.com平台，获取方式见：http://www.weiweihi.com/ApiDocuments/Item/25#51
-#endif
+
 
         private string appId = "appId";
         private string appSecret = "appSecret";
