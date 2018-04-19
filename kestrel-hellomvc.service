@@ -1,0 +1,17 @@
+﻿[Unit]
+Description=ColdDrinkWeixin
+
+[Service]
+WorkingDirectory=/root/publish
+ExecStart=/usr/bin/dotnet /root/publish/ColdDrinkWeixin.dll
+Restart=always
+# Restart service after 10 seconds if dotnet service crashes
+RestartSec=10
+SyslogIdentifier=ColdDrinkWeixin
+#User=apache
+#Environment=ASPNETCORE_ENVIRONMENT=Development
+
+[Install]
+WantedBy=multi-user.target
+
+systemctl restart kestrel-hellomvc.service
