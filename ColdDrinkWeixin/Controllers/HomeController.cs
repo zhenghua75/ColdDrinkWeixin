@@ -5,14 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ColdDrinkWeixin.Models;
-using Senparc.Weixin.MP.Entities.Request;
-using Senparc.Weixin.MP.MvcExtension;
-using Senparc.Weixin.MP;
 using System.IO;
-using ColdDrinkWeixin.CommonService.Utilities;
-using Senparc.Weixin;
-using ColdDrinkWeixin.CommonService.CustomMessageHandler;
-using Senparc.Weixin.Entities;
 using Microsoft.Extensions.Options;
 using System.Text;
 
