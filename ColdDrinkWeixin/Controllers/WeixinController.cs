@@ -29,11 +29,6 @@ namespace ColdDrinkWeixin.Controllers
     {
         readonly Func<string> _getRandomFileName = () => DateTime.Now.ToString("yyyyMMdd-HHmmss") + Guid.NewGuid().ToString("n").Substring(0, 6);
 
-        //public WeixinController()
-        //{
-
-        //}
-
         private string appId;
         private string appSecret;
         private string token;
@@ -84,42 +79,23 @@ namespace ColdDrinkWeixin.Controllers
 
             #region 打包 PostModel 信息
 
-            postModel.Token = token;//根据自己后台的设置保持一致
-            postModel.EncodingAESKey = encodingAESKey;//根据自己后台的设置保持一致
-            postModel.AppId = appId;//根据自己后台的设置保持一致
+            //postModel.Token = token;//根据自己后台的设置保持一致
+            //postModel.EncodingAESKey = encodingAESKey;//根据自己后台的设置保持一致
+            //postModel.AppId = appId;//根据自己后台的设置保持一致
 
             #endregion
 
             //v4.2.2之后的版本，可以设置每个人上下文消息储存的最大数量，防止内存占用过多，如果该参数小于等于0，则不限制
-            var maxRecordCount = 10;
+            //var maxRecordCount = 10;
 
             //自定义MessageHandler，对微信请求的详细判断操作都在这里面。
-
-#if NET45
-            var messageHandler = new CustomMessageHandler(Request.InputStream, postModel, maxRecordCount);
-#else
 
             string body = new StreamReader(Request.Body).ReadToEnd();
             byte[] requestData = Encoding.UTF8.GetBytes(body);
             Stream inputStream = new MemoryStream(requestData);
 
-            //var inputStream = Request.Body;
-            //byte[] buffer = new byte[Request.ContentLength ?? 0];
-            //inputStream.Read(buffer, 0, buffer.Length);
-            //var requestXmlStream = new MemoryStream(buffer);
-            //var requestXml = Encoding.UTF8.GetString(buffer);
+            var messageHandler = new CustomMessageHandler(inputStream, postModel, 10);
 
-
-            //int bytesRead = 0;
-            //while ((bytesRead = Request.Body.Read(buffer, 0, buffer.Length)) != 0)
-            //{
-            //    inputStream.Write(buffer, 0, bytesRead);
-            //}
-
-            //Request.Body.CopyTo(inputStream);
-
-            var messageHandler = new CustomMessageHandler(inputStream, postModel, maxRecordCount);
-#endif
 
             try
             {
@@ -136,13 +112,7 @@ namespace ColdDrinkWeixin.Controllers
 
                 var requestDocumentFileName = Path.Combine(logPath, string.Format("{0}_Request_{1}.txt", _getRandomFileName(), messageHandler.RequestMessage.FromUserName));
                 var ecryptRequestDocumentFileName = Path.Combine(logPath, string.Format("{0}_Request_Ecrypt_{1}.txt", _getRandomFileName(), messageHandler.RequestMessage.FromUserName));
-#if NET45
-                messageHandler.RequestDocument.Save(requestDocumentFileName);
-                if (messageHandler.UsingEcryptMessage)
-                {
-                    messageHandler.EcryptRequestDocument.Save(ecryptRequestDocumentFileName);
-                }
-#else
+
                 using (FileStream fs = new FileStream(requestDocumentFileName, FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     messageHandler.RequestDocument.Save(fs);
@@ -154,7 +124,6 @@ namespace ColdDrinkWeixin.Controllers
                         messageHandler.EcryptRequestDocument.Save(fs);
                     }
                 }
-#endif
 
 
                 #endregion
@@ -169,11 +138,7 @@ namespace ColdDrinkWeixin.Controllers
                 #region 记录 Response 日志
 
                 //测试时可开启，帮助跟踪数据
-
-                //if (messageHandler.ResponseDocument == null)
-                //{
-                //    throw new Exception(messageHandler.RequestDocument.ToString());
-                //}
+                
 
                 var responseDocumentFileName = Path.Combine(logPath, string.Format("{0}_Response_{1}.txt", _getRandomFileName(), messageHandler.RequestMessage.FromUserName));
                 var ecryptResponseDocumentFileName = Path.Combine(logPath, string.Format("{0}_Response_Final_{1}.txt", _getRandomFileName(), messageHandler.RequestMessage.FromUserName));
@@ -247,8 +212,7 @@ namespace ColdDrinkWeixin.Controllers
         {
             if (!CheckSignature.Check(postModel.Signature, postModel.Timestamp, postModel.Nonce, token))
             {
-                //return Content("参数错误！");//v0.7-
-                return new WeixinResult("参数错误！");//v0.8+
+                return new WeixinResult("参数错误！");
             }
 
             postModel.Token = token;
@@ -258,19 +222,10 @@ namespace ColdDrinkWeixin.Controllers
             var messageHandler = new CustomMessageHandler(Request.Body, postModel, 10);
 
             messageHandler.Execute();//执行微信处理过程
-
-            //return Content(messageHandler.ResponseDocument.ToString());//v0.7-
-            //return new WeixinResult(messageHandler);//v0.8+
-            return new FixWeixinBugWeixinResult(messageHandler);//v0.8+
+            
+            return new FixWeixinBugWeixinResult(messageHandler);
         }
-
-        /*
-         * v0.3.0之前的原始Post方法见：WeixinController_OldPost.cs
-         *
-         * 注意：虽然这里提倡使用CustomerMessageHandler的方法，但是MessageHandler基类最终还是基于OldPost的判断逻辑，
-         * 因此如果需要深入了解Senparc.Weixin.MP内部处理消息的机制，可以查看WeixinController_OldPost.cs中的OldPost方法。
-         * 目前为止OldPost依然有效，依然可用于生产。
-         */
+        
          
     }
 }

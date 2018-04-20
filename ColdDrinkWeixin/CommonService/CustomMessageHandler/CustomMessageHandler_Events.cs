@@ -27,65 +27,7 @@ namespace ColdDrinkWeixin.CommonService.CustomMessageHandler
     {
         private string GetWelcomeInfo()
         {
-            //获取Senparc.Weixin.MP.dll版本信息
-#if NET45
-             var fileVersionInfo = FileVersionInfo.GetVersionInfo(Server.GetMapPath("~/bin/Senparc.Weixin.MP.dll"));
-#else
-            var filePath = Server.GetMapPath("~/bin/Release/netcoreapp1.1/Senparc.Weixin.MP.dll");
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(filePath);
-#endif
-
-            string version = fileVersionInfo == null
-                ? "-"
-                : string.Format("{0}.{1}.{2}", fileVersionInfo.FileMajorPart, fileVersionInfo.FileMinorPart, fileVersionInfo.FileBuildPart);
-
-            return string.Format(
-@"欢迎关注【Senparc.Weixin 微信公众平台SDK】，当前运行版本：v{0}。
-您可以发送【文字】【位置】【图片】【语音】【文件】等不同类型的信息，查看不同格式的回复。
-
-您也可以直接点击菜单查看各种类型的回复。
-还可以点击菜单体验微信支付。
-
-SDK官方地址：https://weixin.senparc.com
-SDK Demo：http://sdk.weixin.senparc.com
-源代码及Demo下载地址：https://github.com/JeffreySu/WeiXinMPSDK
-Nuget地址：https://www.nuget.org/packages/Senparc.Weixin.MP
-QQ群：289181996
-
-===============
-更多：
-
-1、JSSDK测试：http://sdk.weixin.senparc.com/WeixinJSSDK
-
-2、开放平台测试（建议PC上打开）：http://sdk.weixin.senparc.com/OpenOAuth/JumpToMpOAuth
-
-3、回复关键字：
-
-【open】   进入第三方开放平台（Senparc.Weixin.Open）测试
-
-【tm】     测试异步模板消息
-
-【openid】 获取OpenId等用户信息
-
-【约束】   测试微信浏览器约束
-
-【AsyncTest】 异步并发测试
-
-【错误】    体验发生错误无法返回正确信息
-
-【容错】    体验去重容错
-
-【ex】      体验错误日志推送提醒
-
-【mute】     不返回任何消息，也无出错信息
-
-【jssdk】    测试JSSDK图文转发接口
-
-格式：【数字#数字】，如2010#0102，调用正则表达式匹配
-
-【订阅】     测试“一次性订阅消息”接口
-",
-                version);
+            return "欢迎关注";
         }
 
         public string GetDownloadInfo(CodeRecord codeRecord)
@@ -99,24 +41,7 @@ QQ群：289181996
 
 © {2} Senparc", codeRecord.Version, codeRecord.IsWebVersion ? "网页版" : ".chm文档版", DateTime.Now.Year);
         }
-
-        public override IResponseMessageBase OnTextOrEventRequest(RequestMessageText requestMessage)
-        {
-            // 预处理文字或事件类型请求。
-            // 这个请求是一个比较特殊的请求，通常用于统一处理来自文字或菜单按钮的同一个执行逻辑，
-            // 会在执行OnTextRequest或OnEventRequest之前触发，具有以下一些特征：
-            // 1、如果返回null，则继续执行OnTextRequest或OnEventRequest
-            // 2、如果返回不为null，则终止执行OnTextRequest或OnEventRequest，返回最终ResponseMessage
-            // 3、如果是事件，则会将RequestMessageEvent自动转为RequestMessageText类型，其中RequestMessageText.Content就是RequestMessageEvent.EventKey
-
-            if (requestMessage.Content == "OneClick")
-            {
-                var strongResponseMessage = CreateResponseMessage<ResponseMessageText>();
-                strongResponseMessage.Content = "您点击了底部按钮。\r\n为了测试微信软件换行bug的应对措施，这里做了一个——\r\n换行";
-                return strongResponseMessage;
-            }
-            return null;//返回null，则继续执行OnTextRequest或OnEventRequest
-        }
+        
 
         /// <summary>
         /// 点击事件
@@ -170,57 +95,11 @@ QQ群：289181996
                         }
                     }
                     break;
-                case "SubClickRoot_Music":
-                    {
-                        //上传缩略图
-                        var accessToken = AccessTokenContainer.TryGetAccessToken(appId, appSecret);
-                        var uploadResult = MediaApi.UploadTemporaryMedia(accessToken, UploadMediaFileType.thumb,
-                                                                     Server.GetMapPath("~/Images/Logo.thumb.jpg"));
-                        //PS：缩略图官方没有特别提示文件大小限制，实际测试哪怕114K也会返回文件过大的错误，因此尽量控制在小一点（当前图片39K）
-
-                        //设置音乐信息
-                        var strongResponseMessage = CreateResponseMessage<ResponseMessageMusic>();
-                        reponseMessage = strongResponseMessage;
-                        strongResponseMessage.Music.Title = "天籁之音";
-                        strongResponseMessage.Music.Description = "真的是天籁之音";
-                        strongResponseMessage.Music.MusicUrl = "https://sdk.weixin.senparc.com/Content/music1.mp3";
-                        strongResponseMessage.Music.HQMusicUrl = "https://sdk.weixin.senparc.com/Content/music1.mp3";
-                        strongResponseMessage.Music.ThumbMediaId = uploadResult.thumb_media_id;
-                    }
-                    break;
-                case "SubClickRoot_Image":
-                    {
-                        //上传图片
-                        var accessToken = AccessTokenContainer.TryGetAccessToken(appId, appSecret);
-                        var uploadResult = MediaApi.UploadTemporaryMedia(accessToken, UploadMediaFileType.image,
-                                                                     Server.GetMapPath("~/Images/Logo.jpg"));
-                        //设置图片信息
-                        var strongResponseMessage = CreateResponseMessage<ResponseMessageImage>();
-                        reponseMessage = strongResponseMessage;
-                        strongResponseMessage.Image.MediaId = uploadResult.media_id;
-                    }
-                    break;
-                case "SubClickRoot_Agent"://代理消息
-                    {
-                        //获取返回的XML
-                        DateTime dt1 = DateTime.Now;
-                        reponseMessage = MessageAgent.RequestResponseMessage(this, agentUrl, agentToken, RequestDocument.ToString());
-                        //上面的方法也可以使用扩展方法：this.RequestResponseMessage(this,agentUrl, agentToken, RequestDocument.ToString());
-
-                        DateTime dt2 = DateTime.Now;
-
-                        if (reponseMessage is ResponseMessageNews)
-                        {
-                            (reponseMessage as ResponseMessageNews)
-                                .Articles[0]
-                                .Description += string.Format("\r\n\r\n代理过程总耗时：{0}毫秒", (dt2 - dt1).Milliseconds);
-                        }
-                    }
-                    break;
+                
                 case "Member"://托管代理会员信息
                     {
                         //原始方法为：MessageAgent.RequestXml(this,agentUrl, agentToken, RequestDocument.ToString());//获取返回的XML
-                        reponseMessage = this.RequestResponseMessage(agentUrl, agentToken, RequestDocument.ToString());
+                        //reponseMessage = this.RequestResponseMessage(agentUrl, agentToken, RequestDocument.ToString());
                     }
                     break;
                 case "OAuth"://OAuth授权测试
@@ -291,21 +170,6 @@ QQ群：289181996
                         strongResponseMessage.Content = "您点击了个性化菜单按钮，您的微信性别设置为：女。";
                     }
                     break;
-                case "GetNewMediaId"://获取新的MediaId
-                    {
-                        var strongResponseMessage = CreateResponseMessage<ResponseMessageText>();
-                        try
-                        {
-                            var result = MediaApi.UploadForeverMedia(appId, Server.GetMapPath("~/Images/logo.jpg"));
-                            strongResponseMessage.Content = result.media_id;
-                        }
-                        catch (Exception e)
-                        {
-                            strongResponseMessage.Content = "发生错误：" + e.Message;
-                            WeixinTrace.SendCustomLog("调用UploadForeverMedia()接口发生异常", e.Message);
-                        }
-                    }
-                    break;
                 default:
                     {
                         var strongResponseMessage = CreateResponseMessage<ResponseMessageText>();
@@ -329,19 +193,7 @@ QQ群：289181996
             responseMessage.Content = "您刚才发送了ENTER事件请求。";
             return responseMessage;
         }
-
-        /// <summary>
-        /// 位置事件
-        /// </summary>
-        /// <param name="requestMessage"></param>
-        /// <returns></returns>
-        public override IResponseMessageBase OnEvent_LocationRequest(RequestMessageEvent_Location requestMessage)
-        {
-            //这里是微信客户端（通过微信服务器）自动发送过来的位置信息
-            var responseMessage = CreateResponseMessage<ResponseMessageText>();
-            responseMessage.Content = "这里写什么都无所谓，比如：上帝爱你！";
-            return responseMessage;//这里也可以返回null（需要注意写日志时候null的问题）
-        }
+        
 
         /// <summary>
         /// 通过二维码扫描关注扫描事件
@@ -514,64 +366,7 @@ QQ群：289181996
             responseMessage.Content = "事件之弹出微信相册发图器";
             return responseMessage;
         }
-
-        /// <summary>
-        /// 事件之弹出地理位置选择器（location_select）
-        /// </summary>
-        /// <param name="requestMessage"></param>
-        /// <returns></returns>
-        public override IResponseMessageBase OnEvent_LocationSelectRequest(RequestMessageEvent_Location_Select requestMessage)
-        {
-            var responseMessage = base.CreateResponseMessage<ResponseMessageText>();
-            responseMessage.Content = "事件之弹出地理位置选择器";
-            return responseMessage;
-        }
-
-        /// <summary>
-        /// 事件之发送模板消息返回结果
-        /// </summary>
-        /// <param name="requestMessage"></param>
-        /// <returns></returns>
-        public override IResponseMessageBase OnEvent_TemplateSendJobFinishRequest(RequestMessageEvent_TemplateSendJobFinish requestMessage)
-        {
-            switch (requestMessage.Status)
-            {
-                case "success":
-                    //发送成功
-
-                    break;
-                case "failed:user block":
-                    //送达由于用户拒收（用户设置拒绝接收公众号消息）而失败
-                    break;
-                case "failed: system failed":
-                    //送达由于其他原因失败
-                    break;
-                default:
-                    throw new WeixinException("未知模板消息状态：" + requestMessage.Status);
-            }
-
-            //注意：此方法内不能再发送模板消息，否则会造成无限循环！
-
-            try
-            {
-                var msg = @"已向您发送模板消息
-状态：{0}
-MsgId：{1}
-（这是一条来自MessageHandler的客服消息）".FormatWith(requestMessage.Status, requestMessage.MsgID);
-                CustomApi.SendText(appId, WeixinOpenId, msg);//发送客服消息
-            }
-            catch (Exception e)
-            {
-                Senparc.Weixin.WeixinTrace.SendCustomLog("模板消息发送失败", e.ToString());
-            }
-
-
-            //无需回复文字内容
-            //return requestMessage
-            //    .CreateResponseMessage<ResponseMessageNoResponse>();
-            return null;
-        }
-
+        
         #region 微信认证事件推送
 
         public override IResponseMessageBase OnEvent_QualificationVerifySuccessRequest(RequestMessageEvent_QualificationVerifySuccess requestMessage)
