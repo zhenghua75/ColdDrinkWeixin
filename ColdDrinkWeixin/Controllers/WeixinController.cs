@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using ColdDrinkWeixin.Common;
+using ColdDrinkWeixin.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -25,7 +25,7 @@ namespace ColdDrinkWeixin.Controllers
         private IMemoryCache memoryCache;
         private string AccessToken
         {
-            get { return memoryCache.Get<string>(Common.AccessToken.key); }
+            get { return memoryCache.Get<string>(Models.AccessToken.key); }
         }
         public WeixinController(IOptions<WeixinSetting> weixinSetting, IMemoryCache memoryCache)
         {

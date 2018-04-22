@@ -1,5 +1,4 @@
-﻿using ColdDrinkWeixin.Common;
-using ColdDrinkWeixin.Controllers;
+﻿using ColdDrinkWeixin.Controllers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +11,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ColdDrinkWeixin.Common
+namespace ColdDrinkWeixin.Models
 {
     public class AccessToken
     {
